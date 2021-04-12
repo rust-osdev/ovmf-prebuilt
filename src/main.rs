@@ -12,6 +12,14 @@ fn main() {
         .find(|link| link.contains("git-ovmf-x64"))
         .expect("no ovmf link found");
     println!("Downloading {}", file_name);
+    let (date, build_number, hash) = {
+        let stripped = file_name.strip_prefix("edk2.git-ovmf-x64-0-").unwrap();
+        let mut components = stripped.split('.');
+        let date = components.next().unwrap();
+        let build_number = components.next().unwrap();
+        let hash = components.next().unwrap();
+        (date, build_number, hash)
+    };
 
     let target_dir = Path::new("target").join("download");
     std::fs::create_dir_all(&target_dir).unwrap();
@@ -56,6 +64,16 @@ fn main() {
         .join("ovmf-x64");
     assert!(ovmf_root.exists());
 
-    // TODO: if run on ci (check env variable), create a new release using `gh` cli tool:
-    // gh release create v<date> {ovmf_root}
+    if std::env::var("CI").as_deref() == Ok("true") {
+        let version = format!("v0.{}.{}+{}", date, build_number, hash);
+        println!("Releasing version {}", version);
+        let mut cmd = std::process::Command::new("gh");
+        cmd.arg("release").arg("create").arg(&version);
+        for entry in std::fs::read_dir(&ovmf_root).unwrap() {
+            cmd.arg(entry.unwrap().path());
+        }
+        if !cmd.status().unwrap().success() {
+            panic!("gh release failed")
+        }
+    }
 }
