@@ -66,14 +66,25 @@ fn main() {
 
     if std::env::var("CI").as_deref() == Ok("true") {
         let version = format!("v0.{}.{}+{}", date, build_number, hash);
-        println!("Releasing version {}", version);
-        let mut cmd = std::process::Command::new("gh");
-        cmd.arg("release").arg("create").arg(&version);
-        for entry in std::fs::read_dir(&ovmf_root).unwrap() {
-            cmd.arg(entry.unwrap().path());
-        }
-        if !cmd.status().unwrap().success() {
-            panic!("gh release failed")
+
+        let exists = {
+            let mut cmd = std::process::Command::new("gh");
+            cmd.arg("release").arg("view").arg(&version);
+            cmd.status().unwrap().success()
+        };
+
+        if exists {
+            println!("Version {} was already released", version);
+        } else {
+            println!("Releasing version {}", version);
+            let mut cmd = std::process::Command::new("gh");
+            cmd.arg("release").arg("create").arg(&version);
+            for entry in std::fs::read_dir(&ovmf_root).unwrap() {
+                cmd.arg(entry.unwrap().path());
+            }
+            if !cmd.status().unwrap().success() {
+                panic!("gh release failed")
+            }
         }
     }
 }
