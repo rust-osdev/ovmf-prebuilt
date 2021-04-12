@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - "main"
+  schedule:
+    - cron: '21 4 * * *' # every day at 4:21
 
 jobs:
   create_release:
