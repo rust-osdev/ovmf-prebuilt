@@ -1,0 +1,11 @@
+name: Create Release
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo run
