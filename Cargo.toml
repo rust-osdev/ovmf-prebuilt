@@ -1,0 +1,10 @@
+[package]
+name = "ovmf-prebuilt"
+version = "0.1.0-alpha.0"
+edition = "2021"
+license-file = "License.txt"
+description = "Prebuilt OVMF version from the tianocore/edk2 project"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
