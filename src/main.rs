@@ -1,90 +1,151 @@
-use std::path::Path;
+use anyhow::{anyhow, bail, Result};
+use clap::Parser;
+use std::fs;
+use std::path::PathBuf;
+use std::process::Command;
 
-fn main() {
-    let url = "https://www.kraxel.org/repos/jenkins/edk2/";
-    let body = ureq::get(url).call().unwrap().into_string().unwrap();
-    let parsed = scraper::Html::parse_document(&body);
-    let selector = scraper::Selector::parse("a").unwrap();
+#[derive(Debug, Eq, PartialEq)]
+struct Release {
+    prebuilt_git_tag: String,
+    edk2_git_tag: String,
+    release_number: u32,
+}
 
-    let file_name = parsed
-        .select(&selector)
-        .map(|e| e.value().attr("href").unwrap())
-        .find(|link| link.contains("git-ovmf-x64"))
-        .expect("no ovmf link found");
-    println!("Downloading {}", file_name);
-    let (date, build_number, hash) = {
-        let stripped = file_name.strip_prefix("edk2.git-ovmf-x64-0-").unwrap();
-        let mut components = stripped.split('.');
-        let date = components.next().unwrap();
-        let build_number = components.next().unwrap();
-        let hash = components.next().unwrap();
-        (date, build_number, hash)
-    };
-
-    let target_dir = Path::new("target").join("download");
-    std::fs::create_dir_all(&target_dir).unwrap();
-
-    let mut download = ureq::get(&(url.to_string() + file_name))
-        .call()
-        .unwrap()
-        .into_reader();
-    let target_file_path = target_dir.join(file_name);
-    let mut target_file = std::fs::File::create(&target_file_path).unwrap();
-    std::io::copy(&mut download, &mut target_file).unwrap();
-
-    let cpio = target_file_path.with_extension("cpio");
-    if cpio.exists() {
-        std::fs::remove_file(&cpio).unwrap();
-    }
-    let extracted = target_dir.join("extracted");
-    if extracted.exists() {
-        std::fs::remove_dir_all(&extracted).unwrap();
-    }
-
-    let mut extract_rpm = std::process::Command::new("7z");
-    extract_rpm.arg("x");
-    extract_rpm.arg(target_file_path);
-    extract_rpm.arg(format!("-o{}", target_dir.display()));
-    if !extract_rpm.status().unwrap().success() {
-        panic!("rpm extraction failed");
-    }
-
-    let mut extract_cpio = std::process::Command::new("7z");
-    extract_cpio.arg("x");
-    extract_cpio.arg(&cpio);
-    extract_cpio.arg(format!("-o{}", extracted.display()));
-    if !extract_cpio.status().unwrap().success() {
-        panic!("cpio extraction failed");
-    }
-
-    let ovmf_root = extracted
-        .join("usr")
-        .join("share")
-        .join("edk2.git")
-        .join("ovmf-x64");
-    assert!(ovmf_root.exists());
-
-    if std::env::var("CI").as_deref() == Ok("true") {
-        let version = format!("v0.{}.{}+{}", date, build_number, hash);
-
-        let exists = {
-            let mut cmd = std::process::Command::new("gh");
-            cmd.arg("release").arg("view").arg(&version);
-            cmd.status().unwrap().success()
-        };
-
-        if exists {
-            println!("Version {} was already released", version);
-        } else {
-            println!("Releasing version {}", version);
-            let mut cmd = std::process::Command::new("gh");
-            cmd.arg("release").arg("create").arg(&version);
-            for entry in std::fs::read_dir(&ovmf_root).unwrap() {
-                cmd.arg(entry.unwrap().path());
-            }
-            if !cmd.status().unwrap().success() {
-                panic!("gh release failed")
-            }
+impl Release {
+    /// The tag should look something like "edk2-stable202211-r1". The
+    /// first part, "edk2-stable202211", should match a tag in the edk2
+    /// repo. The "-r1" at the end is so that we can do multiple releases
+    /// of the same edk2 tag without overwriting previous ones (e.g. if
+    /// we realize later we need to modify a build flag).
+    fn from_tag(tag: &str) -> Result<Self> {
+        let parts: Vec<_> = tag.rsplitn(2, '-').collect();
+        let edk2_git_tag = parts[1];
+        if !edk2_git_tag.starts_with("edk2-") {
+            bail!("bad edk2 git tag");
         }
+        let release_number = parts[0]
+            .strip_prefix('r')
+            .ok_or(anyhow!("bad release number"))?;
+        Ok(Self {
+            prebuilt_git_tag: tag.to_string(),
+            edk2_git_tag: edk2_git_tag.to_string(),
+            release_number: release_number.parse()?,
+        })
+    }
+
+    /// Get the tarball name based off the git tag.
+    fn tarball_name(&self) -> String {
+        format!("{}-bin.tar.xz", self.prebuilt_git_tag)
+    }
+
+    /// Check if this release has already been pushed.
+    fn exists(&self) -> bool {
+        let mut cmd = Command::new("gh");
+        cmd.arg("release").arg("view").arg(&self.prebuilt_git_tag);
+        cmd.status().unwrap().success()
+    }
+
+    /// Push the tarball as a new release.
+    fn push(&self) -> Result<()> {
+        let release_notes = format!(
+            "edk2 tag: https://github.com/tianocore/edk2/releases/tag/{}",
+            self.edk2_git_tag
+        );
+
+        println!("Creating release {}", self.prebuilt_git_tag);
+        let mut cmd = Command::new("gh");
+        cmd.args(["release", "create", &self.prebuilt_git_tag])
+            .args(["--title", &self.prebuilt_git_tag])
+            .args(["--notes", &release_notes])
+            .arg(self.tarball_name());
+        let status = cmd.status()?;
+        if !status.success() {
+            bail!("gh release failed")
+        }
+        Ok(())
+    }
+}
+
+fn build_tarball(opt: &Opt, release: &Release) -> Result<PathBuf> {
+    let container_tag = "ovmf_prebuilt";
+
+    // Build everything.
+    let mut cmd = Command::new(&opt.container_cmd);
+    cmd.args([
+        "build",
+        "-t",
+        container_tag,
+        "--build-arg",
+        &format!("git_tag={}", release.edk2_git_tag),
+        "--build-arg",
+        &format!("bin_dir={}-bin", release.prebuilt_git_tag),
+        ".",
+    ]);
+    println!("run: {cmd:?}");
+    let status = cmd.status()?;
+    if !status.success() {
+        bail!("command failed: {status:?}");
+    }
+
+    // Copy out the tarball from the image.
+    let tarball_name = release.tarball_name();
+    let mut cmd = Command::new(&opt.container_cmd);
+    cmd.args(["run", container_tag, "cat", &tarball_name]);
+    println!("run: {cmd:?}");
+    let output = cmd.output()?;
+    if !output.status.success() {
+        bail!("command failed: {:?}", output.status);
+    }
+    fs::write(&tarball_name, output.stdout)?;
+
+    Ok(tarball_name.into())
+}
+
+#[derive(Parser)]
+struct Opt {
+    /// Base command used to build a container.
+    #[arg(long, default_value = "docker")]
+    container_cmd: String,
+
+    /// Push a new release to the repo.
+    #[arg(long)]
+    create_release: bool,
+
+    /// Git tag to release.
+    tag: String,
+}
+
+fn main() -> Result<()> {
+    let opt = Opt::parse();
+
+    let release = Release::from_tag(&opt.tag)?;
+
+    build_tarball(&opt, &release)?;
+
+    if opt.create_release {
+        if release.exists() {
+            println!("Release {} already exists", release.prebuilt_git_tag);
+        } else {
+            release.push()?;
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_release_from_tag() {
+        assert_eq!(
+            Release::from_tag("edk2-stable202211-r2").unwrap(),
+            Release {
+                prebuilt_git_tag: "edk2-stable202211-r2".to_string(),
+                edk2_git_tag: "edk2-stable202211".to_string(),
+                release_number: 2,
+            }
+        );
     }
 }
