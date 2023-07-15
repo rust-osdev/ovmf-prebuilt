@@ -26,9 +26,8 @@ RUN . venv/bin/activate && python BaseTools/Edk2ToolsBuild.py -t "${toolchain}"
 
 # Build AARCH64.
 ENV GCC5_AARCH64_PREFIX="/usr/bin/aarch64-linux-gnu-"
-# Note: when updating to the next release, replace PlatformBuild.py with QemuBuild.py
 ENV build_target=RELEASE
-ENV stuart_opts="-c ArmVirtPkg/PlatformCI/PlatformBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
+ENV stuart_opts="-c ArmVirtPkg/PlatformCI/QemuBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build IA32.
