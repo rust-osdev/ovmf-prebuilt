@@ -13,6 +13,9 @@ ia32/code.fd
 aarch64/vars.fd
 aarch64/code.fd
 aarch64/shell.efi
+riscv64/vars.fd
+riscv64/code.fd
+riscv64/shell.efi
 ```
 
 [**Latest Release**](https://github.com/rust-osdev/ovmf-prebuilt/releases/latest)

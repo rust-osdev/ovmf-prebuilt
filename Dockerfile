@@ -9,7 +9,13 @@ RUN apt-get update && apt-get install -y \
     mono-complete \
     python3 \
     python3-venv \
-    uuid-dev
+    uuid-dev \
+    wget
+
+# Use the 2023.09.13 nightly GCC 5 toolchain for RISCV64.
+RUN wget -q -O gcc-riscv.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.09.13/riscv64-elf-ubuntu-22.04-gcc-nightly-2023.09.13-nightly.tar.gz
+RUN echo "c3b849d25a43d74e7eb1cf739a8a9fadba5f997c4814732650f36ae250a8ab00 gcc-riscv.tar.gz" | sha256sum --check
+RUN tar -C /opt -xzf gcc-riscv.tar.gz
 
 # Use git rather than a release tarball, since the tarball is missing
 # submodules.
@@ -30,6 +36,12 @@ ENV build_target=RELEASE
 ENV stuart_opts="-c ArmVirtPkg/PlatformCI/QemuBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
+# Build RiscV.
+ENV GCC5_RISCV64_PREFIX="/opt/riscv/bin/riscv64-unknown-elf-"
+ENV build_target=RELEASE
+ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
+RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
+
 # Build IA32.
 ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a IA32 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
@@ -42,6 +54,7 @@ RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart
 ARG bin_dir
 RUN mkdir "${bin_dir}"
 RUN mkdir "${bin_dir}"/aarch64
+RUN mkdir "${bin_dir}"/riscv64
 RUN mkdir "${bin_dir}"/ia32
 RUN mkdir "${bin_dir}"/x64
 
@@ -53,6 +66,15 @@ RUN cp "${aarch64_build}/AARCH64/Shell.efi" "${bin_dir}"/aarch64/shell.efi
 # QEMU requires the AARCH64 files to be exactly 64MiB, so expand with zeroes.
 RUN truncate --size=64MiB "${bin_dir}"/aarch64/code.fd
 RUN truncate --size=64MiB "${bin_dir}"/aarch64/vars.fd
+
+# Copy Riscv files to bin dir.
+ENV riscv_build="Build/RiscVVirtQemu/${build_target}_${toolchain}"
+RUN cp "${riscv_build}/FV/RISCV_VIRT_CODE.fd" "${bin_dir}"/riscv64/code.fd
+RUN cp "${riscv_build}/FV/RISCV_VIRT_VARS.fd" "${bin_dir}"/riscv64/vars.fd
+RUN cp "${riscv_build}/RISCV64/Shell.efi" "${bin_dir}"/riscv64/shell.efi
+# QEMU requires the RISCV64 files to be exactly 32MiB, so expand with zeroes.
+RUN truncate --size=32MiB "${bin_dir}"/riscv64/code.fd
+RUN truncate --size=32MiB "${bin_dir}"/riscv64/vars.fd
 
 # Copy IA32 files to bin dir.
 ENV ia32_build="Build/OvmfIa32/${build_target}_${toolchain}"
