@@ -79,7 +79,7 @@ fn build_tarball(opt: &Opt, release: &Release) -> Result<PathBuf> {
         &format!("git_tag={}", release.edk2_git_tag),
         "--build-arg",
         &format!("bin_dir={}-bin", release.prebuilt_git_tag),
-        ".",
+        "build-edk2",
     ]);
     println!("run: {cmd:?}");
     let status = cmd.status()?;

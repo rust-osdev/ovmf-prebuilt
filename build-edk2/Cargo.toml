@@ -1,0 +1,9 @@
+[package]
+name = "build-edk2"
+version = "0.0.0"
+publish = false
+edition.workspace = true
+
+[dependencies]
+anyhow = "1.0.0"
+clap = { version = "4.0.0", features = ["derive"] }
