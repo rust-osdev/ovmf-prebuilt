@@ -1,5 +1,5 @@
 [workspace]
-members = ["build-edk2"]
+members = ["build-edk2", "ovmf-prebuilt"]
 resolver = "2"
 
 [workspace.package]
