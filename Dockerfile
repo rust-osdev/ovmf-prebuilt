@@ -33,21 +33,21 @@ RUN . venv/bin/activate && python BaseTools/Edk2ToolsBuild.py -t "${toolchain}"
 # Build AARCH64.
 ENV GCC5_AARCH64_PREFIX="/usr/bin/aarch64-linux-gnu-"
 ENV build_target=RELEASE
-ENV stuart_opts="-c ArmVirtPkg/PlatformCI/QemuBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
+ENV stuart_opts="-c ArmVirtPkg/PlatformCI/QemuBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_NETWORK_HTTP_ENABLE=1"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build RiscV.
 ENV GCC5_RISCV64_PREFIX="/opt/riscv/bin/riscv64-unknown-elf-"
 ENV build_target=RELEASE
-ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain}"
+ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_NETWORK_HTTP_ENABLE=1"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build IA32.
-ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a IA32 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
+ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a IA32 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_NETWORK_HTTP_ENABLE=1 BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build X64.
-ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
+ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} BLD_*_NETWORK_HTTP_ENABLE=1 BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Create the output bin dir.
