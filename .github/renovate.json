@@ -10,7 +10,7 @@
       "on wednesday"
     ]
   },
-  "rangeStrategy": "replace",
+  "rangeStrategy": "update-lockfile",
   "schedule": [
     "on wednesday"
   ]
