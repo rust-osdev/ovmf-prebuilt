@@ -1,8 +1,14 @@
 [package]
 name = "ovmf-prebuilt"
-version = "0.2.0"
+version = "0.3.0"
 edition.workspace = true
 categories = ["development-tools"]
 keywords = ["edk2", "firmware", "ovmf", "prebuilt"]
+license = "MIT OR Apache-2.0"
 
 [dependencies]
+log = "0.4"
+lzma-rs = "0.3"
+sha2 = "0.10"
+tar = "0.4"
+ureq = "2.0"
