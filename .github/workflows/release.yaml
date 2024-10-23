@@ -1,0 +1,19 @@
+on:
+  push:
+    branches:
+      - main
+      
+name: Release
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install auto-release
+      - run: auto-release --condition subject -p ovmf-prebuilt
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
