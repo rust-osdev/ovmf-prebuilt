@@ -5,6 +5,8 @@ edition.workspace = true
 categories = ["development-tools"]
 keywords = ["edk2", "firmware", "ovmf", "prebuilt"]
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-osdev/ovmf-prebuilt"
+description = "Library to download and cache OVMF prebuilt binaries"
 
 [dependencies]
 log = "0.4"
