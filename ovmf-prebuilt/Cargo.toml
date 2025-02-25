@@ -1,6 +1,6 @@
 [package]
 name = "ovmf-prebuilt"
-version = "0.2.1"
+version = "0.2.2"
 edition.workspace = true
 categories = ["development-tools"]
 keywords = ["edk2", "firmware", "ovmf", "prebuilt"]
