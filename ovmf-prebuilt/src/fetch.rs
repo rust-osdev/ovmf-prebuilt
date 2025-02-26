@@ -61,7 +61,8 @@ pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Er
 
 /// Download `url` and return the raw data.
 fn download_url(url: &str) -> Result<Vec<u8>, Error> {
-    let agent: Agent = ureq::AgentBuilder::new().user_agent(USER_AGENT).build();
+    let config = Agent::config_builder().user_agent(USER_AGENT).build();
+    let agent = Agent::new_with_config(config);
 
     // Download the file.
     info!("downloading {url}");
@@ -70,7 +71,8 @@ fn download_url(url: &str) -> Result<Vec<u8>, Error> {
         .call()
         .map_err(|err| Error::Request(Box::new(err)))?;
     let mut data = Vec::with_capacity(MAX_DOWNLOAD_SIZE_IN_BYTES);
-    resp.into_reader()
+    resp.into_body()
+        .into_reader()
         // Limit the size of the download.
         .take(MAX_DOWNLOAD_SIZE_IN_BYTES.try_into().unwrap())
         .read_to_end(&mut data)
