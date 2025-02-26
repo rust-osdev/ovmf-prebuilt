@@ -62,7 +62,7 @@ impl Source {
     ///
     /// Note that this is not necessarily the latest prebuilt available
     /// from the git repo.
-    pub const LATEST: Self = Self::EDK2_STABLE202408_R1;
+    pub const LATEST: Self = Self::EDK2_STABLE202502_R1;
 }
 
 /// UEFI architecture.
