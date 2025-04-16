@@ -31,7 +31,7 @@ ENV toolchain=GCC5
 RUN . venv/bin/activate && python BaseTools/Edk2ToolsBuild.py -t "${toolchain}"
 
 # Build options.
-ENV common_build_opt="BLD_*_NETWORK_HTTP_ENABLE=1"
+ENV common_build_opt="BLD_*_NETWORK_HTTP_ENABLE=1 BLD_*_NETWORK_TLS_ENABLE=1"
 ENV tpm_build_opt="BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
 
 # Build AARCH64.
