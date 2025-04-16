@@ -58,11 +58,16 @@ impl Source {
         sha256: "6d6122e88cdc09e1ffafb6a39fbdbfba668a6ded3f2a032b2cd6c0b7ff6d69df",
     };
 
+    pub const EDK2_STABLE202502_R2: Self = Self {
+        tag: "edk2-stable202502-r2",
+        sha256: "dd59d3d52f0a643f07a488f80ab40f89c30f360999d98cdffb30e1eba5476641",
+    };
+
     /// Latest release tag.
     ///
     /// Note that this is not necessarily the latest prebuilt available
     /// from the git repo.
-    pub const LATEST: Self = Self::EDK2_STABLE202502_R1;
+    pub const LATEST: Self = Self::EDK2_STABLE202502_R2;
 }
 
 /// UEFI architecture.
