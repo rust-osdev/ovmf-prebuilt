@@ -27,6 +27,11 @@ impl Source {
         sha256: "dd59d3d52f0a643f07a488f80ab40f89c30f360999d98cdffb30e1eba5476641",
     };
 
+    pub const EDK2_STABLE202505_R1: Self = Self {
+        tag: "edk2-stable202505-r1",
+        sha256: "7535021dc7f98453803cefcade59e839e9f559274493d681fec7b19219081e29",
+    };
+
     pub const EDK2_STABLE202505_R2: Self = Self {
         tag: "edk2-stable202505-r2",
         sha256: "ed4e5502dc6b4e1d524929b27b274f9d6e2581a4179612b5628de9660008c8e0",
@@ -42,9 +47,19 @@ impl Source {
         sha256: "79841c5dcac6d4bb71ead5edb6ca2a251237330be3c0b166bdc8a8fec0ce760d",
     };
 
+    pub const EDK2_STABLE202511_R2: Self = Self {
+        tag: "edk2-stable202511-r2",
+        sha256: "5caf1ad39898e786f0fee27f27fc4b7f90ce1beb1af8f60e27777ebdd6a775cb",
+    };
+
+    pub const EDK2_STABLE202602_R1: Self = Self {
+        tag: "edk2-stable202602-r1",
+        sha256: "d4621f6013b1c6b36e9aa17dafb48458e5499392f9abbb1d11d719725b2ebc35",
+    };
+
     /// Latest release tag.
     ///
     /// Note that this is not necessarily the latest prebuilt available
     /// from the git repo.
-    pub const LATEST: Self = Self::EDK2_STABLE202511_R1;
+    pub const LATEST: Self = Self::EDK2_STABLE202602_R1;
 }
