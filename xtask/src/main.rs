@@ -1,5 +1,4 @@
 mod github;
-#[expect(dead_code)]
 mod update_sources;
 
 use anyhow::{anyhow, bail, Result};
@@ -122,6 +121,7 @@ struct BuildEdk2 {
 #[derive(Subcommand)]
 enum Action {
     BuildEdk2(BuildEdk2),
+    UpdateSources,
 }
 
 #[derive(Parser)]
@@ -151,6 +151,7 @@ fn main() -> Result<()> {
 
     match &opt.action {
         Action::BuildEdk2(opt) => build_edk2(opt),
+        Action::UpdateSources => update_sources::update_sources(),
     }
 }
 
