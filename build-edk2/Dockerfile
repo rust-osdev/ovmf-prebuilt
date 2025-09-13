@@ -17,6 +17,11 @@ RUN wget -q -O gcc-riscv.tar.gz https://github.com/riscv-collab/riscv-gnu-toolch
 RUN echo "c3b849d25a43d74e7eb1cf739a8a9fadba5f997c4814732650f36ae250a8ab00 gcc-riscv.tar.gz" | sha256sum --check
 RUN tar -C /opt -xzf gcc-riscv.tar.gz
 
+# Use the LoongArch64 cross toolchain for building LoongArch64 code. 
+RUN wget https://github.com/loongson/build-tools/releases/download/2023.08.08/x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz
+RUN mkdir /opt/loongarch64_cross-toolchain/
+RUN tar -vxf x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz -C /opt/loongarch64_cross-toolchain/
+
 # Use git rather than a release tarball, since the tarball is missing
 # submodules.
 ARG git_tag
@@ -54,6 +59,12 @@ RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart
 ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt} ${tpm_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
+# Build LoongArch64.
+ENV GCC5_LOONGARCH64_PREFIX="/opt/loongarch64_cross-toolchain/cross-tools/bin/loongarch64-unknown-linux-gnu-"
+ENV build_target=RELEASE
+ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a LOONGARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt}"
+RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
+
 # Create the output bin dir.
 ARG bin_dir
 RUN mkdir "${bin_dir}"
@@ -61,6 +72,7 @@ RUN mkdir "${bin_dir}"/aarch64
 RUN mkdir "${bin_dir}"/riscv64
 RUN mkdir "${bin_dir}"/ia32
 RUN mkdir "${bin_dir}"/x64
+RUN mkdir "${bin_dir}"/loongarch64
 
 # Copy AARCH64 files to bin dir.
 ENV aarch64_build="Build/ArmVirtQemu-AARCH64/${build_target}_${toolchain}"
@@ -91,6 +103,12 @@ ENV x64_build="Build/OvmfX64/${build_target}_${toolchain}"
 RUN cp "${x64_build}/FV/OVMF_CODE.fd" "${bin_dir}"/x64/code.fd
 RUN cp "${x64_build}/FV/OVMF_VARS.fd" "${bin_dir}"/x64/vars.fd
 RUN cp "${x64_build}/X64/Shell.efi" "${bin_dir}"/x64/shell.efi
+
+# Copy LoongArch64 files to bin dir.
+ENV loongarch64_build="Build/LoongArchVirtQemu/${build_target}_${toolchain}"
+RUN cp "${loongarch64_build}/FV/QEMU_EFI.fd" "${bin_dir}"/loongarch64/code.fd
+RUN cp "${loongarch64_build}/FV/QEMU_VARS.fd" "${bin_dir}"/loongarch64/vars.fd
+RUN cp "${loongarch64_build}/LOONGARCH64/Shell.efi" "${bin_dir}"/loongarch64/shell.efi
 
 # Create the compressed tarball of the bin dir.
 RUN tar cf "${bin_dir}.tar" "${bin_dir}"
