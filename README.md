@@ -16,6 +16,9 @@ aarch64/shell.efi
 riscv64/vars.fd
 riscv64/code.fd
 riscv64/shell.efi
+loongarch64/vars.fd
+loongarch64/code.fd
+loongarch64/shell.efi
 ```
 
 [**Latest Release**](https://github.com/rust-osdev/ovmf-prebuilt/releases/latest)

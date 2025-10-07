@@ -19,6 +19,7 @@ RUN tar -C /opt -xzf gcc-riscv.tar.gz
 
 # Use the LoongArch64 cross toolchain for building LoongArch64 code. 
 RUN wget https://github.com/loongson/build-tools/releases/download/2023.08.08/x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz
+RUN echo "51f02e7e63e406892f1a6b7fae2a50c98758449358de67418d79acacda22b8e3  x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz" | sha256sum --check
 RUN mkdir /opt/loongarch64_cross-toolchain/
 RUN tar -vxf x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz -C /opt/loongarch64_cross-toolchain/
 
