@@ -13,9 +13,9 @@ RUN apt-get update && apt-get install -y \
     wget
 
 # Use the 2023.09.13 nightly GCC 5 toolchain for RISCV64.
-RUN wget -q -O gcc-riscv.tar.gz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2023.09.13/riscv64-elf-ubuntu-22.04-gcc-nightly-2023.09.13-nightly.tar.gz
-RUN echo "c3b849d25a43d74e7eb1cf739a8a9fadba5f997c4814732650f36ae250a8ab00 gcc-riscv.tar.gz" | sha256sum --check
-RUN tar -C /opt -xzf gcc-riscv.tar.gz
+RUN wget -q -O gcc-riscv.tar.xz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2025.09.28/riscv64-elf-ubuntu-22.04-gcc-nightly-2025.09.28-nightly.tar.xz
+RUN echo "0ecaa2a242d39c84e5f0aef33a771a93e5b89c4833b5ff87d5604008f34a068b gcc-riscv.tar.xz" | sha256sum --check
+RUN tar -C /opt -xf gcc-riscv.tar.xz
 
 # Use the LoongArch64 cross toolchain for building LoongArch64 code. 
 RUN wget https://github.com/loongson/build-tools/releases/download/2023.08.08/x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz
