@@ -43,6 +43,7 @@ pub struct Source {
 pub enum Arch {
     Aarch64,
     Ia32,
+    LoongArch64,
     Riscv64,
     X64,
 }
@@ -53,6 +54,7 @@ impl Arch {
         match self {
             Self::Aarch64 => "aarch64",
             Self::Ia32 => "ia32",
+            Self::LoongArch64 => "loongarch64",
             Self::Riscv64 => "riscv64",
             Self::X64 => "x64",
         }
