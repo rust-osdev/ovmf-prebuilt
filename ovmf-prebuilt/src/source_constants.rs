@@ -29,12 +29,17 @@ impl Source {
 
     pub const EDK2_STABLE202505_R2: Self = Self {
         tag: "edk2-stable202505-r2",
-        sha256: "3502d59957d5af87b3717af3e10d5e92d7575a2a37aa8b1fe6d42a92b786fcdd",
+        sha256: "ed4e5502dc6b4e1d524929b27b274f9d6e2581a4179612b5628de9660008c8e0",
+    };
+
+    pub const EDK2_STABLE202508_R1: Self = Self {
+        tag: "edk2-stable202508-r1",
+        sha256: "e461e2f0a43092ef9d29996ba0f8c05de097223791c33f5ff61a7e1ea12e6dac",
     };
 
     /// Latest release tag.
     ///
     /// Note that this is not necessarily the latest prebuilt available
     /// from the git repo.
-    pub const LATEST: Self = Self::EDK2_STABLE202505_R2;
+    pub const LATEST: Self = Self::EDK2_STABLE202508_R1;
 }
