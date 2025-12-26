@@ -17,4 +17,4 @@ tar = "0.4"
 [dependencies.ureq]
 version = "3.0"
 default-features = false
-features = ["rustls"]
+features = ["native-tls"]
