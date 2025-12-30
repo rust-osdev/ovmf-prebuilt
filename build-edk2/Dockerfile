@@ -53,10 +53,6 @@ ENV build_target=RELEASE
 ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
-# Build IA32.
-ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a IA32 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt} ${tpm_build_opt}"
-RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
-
 # Build X64.
 ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt} ${tpm_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
@@ -72,7 +68,6 @@ ARG bin_dir
 RUN mkdir "${bin_dir}"
 RUN mkdir "${bin_dir}"/aarch64
 RUN mkdir "${bin_dir}"/riscv64
-RUN mkdir "${bin_dir}"/ia32
 RUN mkdir "${bin_dir}"/x64
 RUN mkdir "${bin_dir}"/loongarch64
 
@@ -93,12 +88,6 @@ RUN cp "${riscv_build}/RISCV64/Shell.efi" "${bin_dir}"/riscv64/shell.efi
 # QEMU requires the RISCV64 files to be exactly 32MiB, so expand with zeroes.
 RUN truncate --size=32MiB "${bin_dir}"/riscv64/code.fd
 RUN truncate --size=32MiB "${bin_dir}"/riscv64/vars.fd
-
-# Copy IA32 files to bin dir.
-ENV ia32_build="Build/OvmfIa32/${build_target}_${toolchain}"
-RUN cp "${ia32_build}/FV/OVMF_CODE.fd" "${bin_dir}"/ia32/code.fd
-RUN cp "${ia32_build}/FV/OVMF_VARS.fd" "${bin_dir}"/ia32/vars.fd
-RUN cp "${ia32_build}/IA32/Shell.efi" "${bin_dir}"/ia32/shell.efi
 
 # Copy X64 files to bin dir.
 ENV x64_build="Build/OvmfX64/${build_target}_${toolchain}"
