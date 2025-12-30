@@ -38,6 +38,11 @@ pub struct Source {
 }
 
 /// UEFI architecture.
+///
+/// Note that not all releases contain every architecture:
+/// * `Ia32` is available in `edk2-stable202508` and earlier releases.
+/// * `LoongArch64` is available in `edk2-stable202505` and later releases.
+/// * `Aarch64`, `Riscv64`, and `X64` are available in all releases.
 #[allow(missing_docs)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum Arch {
