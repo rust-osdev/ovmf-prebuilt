@@ -7,9 +7,6 @@ The contents of the release tarball look like this:
 x64/shell.efi
 x64/vars.fd
 x64/code.fd
-ia32/shell.efi
-ia32/vars.fd
-ia32/code.fd
 aarch64/vars.fd
 aarch64/code.fd
 aarch64/shell.efi
@@ -19,6 +16,13 @@ riscv64/shell.efi
 loongarch64/vars.fd
 loongarch64/code.fd
 loongarch64/shell.efi
+```
+
+Older releases (`edk2-stable202508` and earlier) also include:
+```
+ia32/shell.efi
+ia32/vars.fd
+ia32/code.fd
 ```
 
 [**Latest Release**](https://github.com/rust-osdev/ovmf-prebuilt/releases/latest)
