@@ -72,7 +72,7 @@ RUN mkdir "${bin_dir}"/x64
 RUN mkdir "${bin_dir}"/loongarch64
 
 # Copy AARCH64 files to bin dir.
-ENV aarch64_build="Build/ArmVirtQemu-AARCH64/${build_target}_${toolchain}"
+ENV aarch64_build="Build/ArmVirtQemu-AArch64/${build_target}_${toolchain}"
 RUN cp "${aarch64_build}/FV/QEMU_EFI.fd" "${bin_dir}"/aarch64/code.fd
 RUN cp "${aarch64_build}/FV/QEMU_VARS.fd" "${bin_dir}"/aarch64/vars.fd
 RUN cp "${aarch64_build}/AARCH64/Shell.efi" "${bin_dir}"/aarch64/shell.efi
