@@ -19,10 +19,10 @@ RUN echo "0ecaa2a242d39c84e5f0aef33a771a93e5b89c4833b5ff87d5604008f34a068b gcc-r
 RUN tar -C /opt -xf gcc-riscv.tar.xz
 
 # Use the LoongArch64 cross toolchain for building LoongArch64 code. 
-RUN wget https://github.com/loongson/build-tools/releases/download/2023.08.08/x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz
-RUN echo "51f02e7e63e406892f1a6b7fae2a50c98758449358de67418d79acacda22b8e3  x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz" | sha256sum --check
+RUN wget https://github.com/loongson/build-tools/releases/download/2025.08.08/x86_64-cross-tools-loongarch64-binutils_2.45-gcc_15.1.0.tar.xz
+RUN echo "f1628eda43d679ab9afd98cec33789545c85691984804ca992cadd125ed112c6  x86_64-cross-tools-loongarch64-binutils_2.45-gcc_15.1.0.tar.xz" | sha256sum --check
 RUN mkdir /opt/loongarch64_cross-toolchain/
-RUN tar -vxf x86_64-cross-tools-loongarch64-binutils_2.41-gcc_13.2.0.tar.xz -C /opt/loongarch64_cross-toolchain/
+RUN tar -vxf x86_64-cross-tools-loongarch64-binutils_2.45-gcc_15.1.0.tar.xz -C /opt/loongarch64_cross-toolchain/
 
 # Use git rather than a release tarball, since the tarball is missing
 # submodules.
