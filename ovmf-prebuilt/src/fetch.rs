@@ -1,9 +1,10 @@
 use crate::{Error, Source};
 use log::info;
 use sha2::{Digest, Sha256};
-use std::fs;
 use std::io::{self, Cursor, Read};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
+use std::{fs, thread};
 use tar::Archive;
 use ureq::Agent;
 
@@ -12,6 +13,9 @@ const USER_AGENT: &str = "https://github.com/rust-osdev/ovmf-prebuilt";
 
 /// Maximum number of bytes to download (10 MiB).
 const MAX_DOWNLOAD_SIZE_IN_BYTES: usize = 10 * 1024 * 1024;
+
+/// Maximum number of times to retry the download if it fails.
+const MAX_DOWNLOAD_RETRIES: usize = 4;
 
 /// Update the local cache. Does nothing if the cache is already up to date.
 pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Error> {
@@ -31,7 +35,7 @@ pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Er
         release = source.tag
     );
 
-    let data = download_url(&url)?;
+    let data = retry(MAX_DOWNLOAD_RETRIES, || download_url(&url))?;
 
     // Validate the hash.
     let actual_hash = format!("{:x}", Sha256::digest(&data));
@@ -82,6 +86,39 @@ fn download_url(url: &str) -> Result<Vec<u8>, Error> {
     Ok(data)
 }
 
+/// Attempt an operation and retry on failure.
+///
+/// Call `f`, and retry up to `max_retries` times if it fails. If the
+/// final attempt fails, the error result of `f` will be returned.
+///
+/// The first retry will happen after a one-second delay. Each
+/// subsequent retry doubles the delay.
+fn retry<F>(max_retries: usize, mut f: F) -> Result<Vec<u8>, Error>
+where
+    F: FnMut() -> Result<Vec<u8>, Error>,
+{
+    let mut delay = Duration::from_secs(1);
+    let max_attempts = 1 + max_retries;
+    for attempt in 1..=max_attempts {
+        match f() {
+            Ok(r) => return Ok(r),
+            Err(err) => {
+                // Return the error if this is the last iteration.
+                if attempt == max_attempts {
+                    return Err(err);
+                }
+
+                // Otherwise, sleep and double the delay time.
+                info!("sleeping for {delay:?} before retrying...");
+                thread::sleep(delay);
+                delay *= 2;
+            }
+        }
+    }
+
+    unreachable!();
+}
+
 fn decompress(data: &[u8]) -> Result<Vec<u8>, Error> {
     info!("decompressing tarball");
     let mut decompressed = Vec::new();
@@ -119,4 +156,46 @@ fn extract(tarball_data: &[u8], prebuilt_dir: &Path) -> Result<(), io::Error> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_retry_immediate_success() {
+        let mut attempts = 0;
+        retry(4, || {
+            attempts += 1;
+            Ok(vec![])
+        })
+        .unwrap();
+        assert_eq!(attempts, 1);
+    }
+
+    #[test]
+    fn test_retry_one_retry() {
+        let mut attempts = 0;
+        retry(4, || {
+            attempts += 1;
+            if attempts < 2 {
+                Err(Error::Download(io::ErrorKind::Interrupted.into()))
+            } else {
+                Ok(vec![])
+            }
+        })
+        .unwrap();
+        assert_eq!(attempts, 2);
+    }
+
+    #[test]
+    fn test_retry_failure() {
+        let mut attempts = 0;
+        assert!(retry(2, || {
+            attempts += 1;
+            Err(Error::Download(io::ErrorKind::Interrupted.into()))
+        })
+        .is_err());
+        assert_eq!(attempts, 3);
+    }
 }
