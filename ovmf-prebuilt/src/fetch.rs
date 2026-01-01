@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use std::{fs, thread};
 use tar::Archive;
+use ureq::tls::{TlsConfig, TlsProvider};
 use ureq::Agent;
 
 /// User-Agent header to send with download requests.
@@ -65,7 +66,13 @@ pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Er
 
 /// Download `url` and return the raw data.
 fn download_url(url: &str) -> Result<Vec<u8>, Error> {
-    let config = Agent::config_builder().user_agent(USER_AGENT).build();
+    let tls_config = TlsConfig::builder()
+        .provider(TlsProvider::NativeTls)
+        .build();
+    let config = Agent::config_builder()
+        .tls_config(tls_config)
+        .user_agent(USER_AGENT)
+        .build();
     let agent = Agent::new_with_config(config);
 
     // Download the file.
