@@ -31,11 +31,32 @@ RUN git clone --branch "${git_tag}" https://github.com/tianocore/edk2.git
 WORKDIR /edk2
 RUN git submodule update --init
 
+# Clone edk2-platforms for IntelSiliconPkg
+# Note: edk2-platforms has no stable tags, using commit from edk2-stable202511 release timeframe (2025-11-21)
+# Pinned to commit: 1e64c1109ae2ac0185351e8d0c19732970d4fecf (latest before 2025-11-22)
+RUN git clone https://github.com/tianocore/edk2-platforms.git /edk2-platforms && \
+    cd /edk2-platforms && \
+    git checkout 1e64c1109ae2ac0185351e8d0c19732970d4fecf
+
+# Create symbolic links to make IntelSiliconPkg accessible from edk2 workspace
+# The INF files reference both Silicon/Intel/IntelSiliconPkg and IntelSiliconPkg paths
+RUN ln -s /edk2-platforms/Silicon /edk2/Silicon && \
+    ln -s /edk2-platforms/Silicon/Intel/IntelSiliconPkg /edk2/IntelSiliconPkg
+
 # Set up deps.
 RUN python3 -m venv venv
 RUN . venv/bin/activate && pip install -r pip-requirements.txt --upgrade
 ENV toolchain=GCC5
 RUN . venv/bin/activate && python BaseTools/Edk2ToolsBuild.py -t "${toolchain}"
+
+# Add IntelVTdDxe to OvmfPkgX64.dsc (for compilation)
+RUN sed -i '/\[Components\]/a \  Silicon/Intel/IntelSiliconPkg/Feature/VTd/IntelVTdDxe/IntelVTdDxe.inf' \
+    /edk2/OvmfPkg/OvmfPkgX64.dsc
+
+# Add IntelVTdDxe to OvmfPkgX64.fdf (for inclusion in firmware image)
+# Place after AcpiTableDxe since VTdDxe depends on ACPI tables (DMAR)
+RUN sed -i '/INF  MdeModulePkg\/Universal\/Acpi\/AcpiTableDxe\/AcpiTableDxe.inf/a \  INF  Silicon/Intel/IntelSiliconPkg/Feature/VTd/IntelVTdDxe/IntelVTdDxe.inf' \
+    /edk2/OvmfPkg/OvmfPkgX64.fdf
 
 # Build options.
 ENV common_build_opt="BLD_*_NETWORK_HTTP_ENABLE=1 BLD_*_NETWORK_TLS_ENABLE=1"
@@ -54,6 +75,8 @@ ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_ta
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build X64.
+# Set PACKAGES_PATH as an ENV variable that persists through all stuart commands
+ENV PACKAGES_PATH="/edk2:/edk2-platforms"
 ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt} ${tpm_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 

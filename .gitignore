@@ -1,2 +1,3 @@
 /target
 edk2-*-bin*
+build-edk2/output*
