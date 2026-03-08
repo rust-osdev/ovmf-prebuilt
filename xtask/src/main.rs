@@ -1,5 +1,6 @@
-#[expect(dead_code)]
 mod github;
+#[expect(dead_code)]
+mod update_sources;
 
 use anyhow::{anyhow, bail, Result};
 use clap::{Args, Parser, Subcommand};
