@@ -23,10 +23,10 @@ pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Er
 
     // Check if the hash file already has the expected hash in it. If so, assume
     // that we've already got the correct prebuilt downloaded and unpacked.
-    if let Ok(current_hash) = fs::read_to_string(&hash_path) {
-        if current_hash == source.sha256 {
-            return Ok(());
-        }
+    if let Ok(current_hash) = fs::read_to_string(&hash_path)
+        && current_hash == source.sha256
+    {
+        return Ok(());
     }
 
     let base_url = "https://github.com/rust-osdev/ovmf-prebuilt/releases/download";
@@ -191,11 +191,13 @@ mod tests {
     #[test]
     fn test_retry_failure() {
         let mut attempts = 0;
-        assert!(retry(2, || {
-            attempts += 1;
-            Err(Error::Download(io::ErrorKind::Interrupted.into()))
-        })
-        .is_err());
+        assert!(
+            retry(2, || {
+                attempts += 1;
+                Err(Error::Download(io::ErrorKind::Interrupted.into()))
+            })
+            .is_err()
+        );
         assert_eq!(attempts, 3);
     }
 }

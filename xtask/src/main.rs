@@ -1,7 +1,7 @@
 mod github;
 mod update_sources;
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
 use std::fs;
 use std::path::PathBuf;

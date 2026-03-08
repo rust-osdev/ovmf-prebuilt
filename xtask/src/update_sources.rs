@@ -1,5 +1,5 @@
 use crate::github::Github;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::fs;
 use std::path::Path;
 

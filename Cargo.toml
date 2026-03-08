@@ -1,9 +1,9 @@
 [workspace]
 members = ["ovmf-prebuilt", "xtask"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 
 [workspace.dependencies]
 ureq = { version = "3.0", default-features = false, features = ["rustls"] }
