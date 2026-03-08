@@ -48,7 +48,7 @@ The build is ordinarily run with Github Actions by manually pushing a tag to the
 The build can be run locally with:
 
 ```
-cargo run -- [--container-cmd <cmd>] [--create-release] <tag>
+cargo xtask build-edk2 [--container-cmd <cmd>] [--create-release] <tag>
 ```
 
 [edk2]: https://github.com/tianocore/edk2
