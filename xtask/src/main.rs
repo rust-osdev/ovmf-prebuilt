@@ -1,3 +1,6 @@
+#[expect(dead_code)]
+mod github;
+
 use anyhow::{anyhow, bail, Result};
 use clap::{Args, Parser, Subcommand};
 use std::fs;
