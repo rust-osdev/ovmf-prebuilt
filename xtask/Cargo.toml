@@ -7,3 +7,5 @@ edition.workspace = true
 [dependencies]
 anyhow = "1.0.0"
 clap = { version = "4.0.0", features = ["derive"] }
+serde = { version = "1.0.0", features = ["derive"] }
+ureq = { workspace = true, features = ["json"] }
