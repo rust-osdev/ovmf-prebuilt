@@ -13,4 +13,4 @@ log = "0.4"
 lzma-rs = "0.3"
 sha2 = "0.10"
 tar = "0.4"
-ureq = { version = "3.0", default-features = false, features = ["rustls"] }
+ureq.workspace = true

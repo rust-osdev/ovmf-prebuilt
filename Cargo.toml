@@ -4,3 +4,6 @@ resolver = "2"
 
 [workspace.package]
 edition = "2021"
+
+[workspace.dependencies]
+ureq = { version = "3.0", default-features = false, features = ["rustls"] }
