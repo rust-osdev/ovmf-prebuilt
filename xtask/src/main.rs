@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Result};
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -66,7 +66,7 @@ impl Release {
     }
 }
 
-fn build_tarball(opt: &Opt, release: &Release) -> Result<PathBuf> {
+fn build_tarball(opt: &BuildEdk2, release: &Release) -> Result<PathBuf> {
     let container_tag = "ovmf_prebuilt";
 
     // Build everything.
@@ -101,8 +101,8 @@ fn build_tarball(opt: &Opt, release: &Release) -> Result<PathBuf> {
     Ok(tarball_name.into())
 }
 
-#[derive(Parser)]
-struct Opt {
+#[derive(Args)]
+struct BuildEdk2 {
     /// Base command used to build a container.
     #[arg(long, default_value = "docker")]
     container_cmd: String,
@@ -115,12 +115,21 @@ struct Opt {
     tag: String,
 }
 
-fn main() -> Result<()> {
-    let opt = Opt::parse();
+#[derive(Subcommand)]
+enum Action {
+    BuildEdk2(BuildEdk2),
+}
 
+#[derive(Parser)]
+struct Opt {
+    #[command(subcommand)]
+    action: Action,
+}
+
+fn build_edk2(opt: &BuildEdk2) -> Result<()> {
     let release = Release::from_tag(&opt.tag)?;
 
-    build_tarball(&opt, &release)?;
+    build_tarball(opt, &release)?;
 
     if opt.create_release {
         if release.exists() {
@@ -131,6 +140,14 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn main() -> Result<()> {
+    let opt = Opt::parse();
+
+    match &opt.action {
+        Action::BuildEdk2(opt) => build_edk2(opt),
+    }
 }
 
 #[cfg(test)]
