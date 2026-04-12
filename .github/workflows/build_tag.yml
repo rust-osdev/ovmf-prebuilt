@@ -1,4 +1,4 @@
-name: Create Release
+name: Build Tag
 on:
   push:
     tags:
@@ -12,6 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - run: cargo run -- --container-cmd=docker --create-release $GITHUB_REF_NAME
+      - run: cargo xtask build-edk2 --container-cmd=docker --create-release $GITHUB_REF_NAME
         env:
           GH_TOKEN: ${{ github.token }}
