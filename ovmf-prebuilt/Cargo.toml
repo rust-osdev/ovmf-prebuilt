@@ -11,6 +11,6 @@ description = "Library to download and cache OVMF prebuilt binaries"
 [dependencies]
 log = "0.4"
 lzma-rs = "0.3"
-sha2 = "0.10"
+sha2 = "0.11"
 tar = "0.4"
 ureq.workspace = true
