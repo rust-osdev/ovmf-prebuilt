@@ -49,7 +49,7 @@ RUN ln -s /edk2-platforms/Silicon /edk2/Silicon && \
 # Set up deps.
 RUN python3 -m venv venv
 RUN . venv/bin/activate && pip install -r pip-requirements.txt --upgrade
-ENV toolchain=GCC5
+ENV toolchain=GCC
 RUN . venv/bin/activate && python BaseTools/Edk2ToolsBuild.py -t "${toolchain}"
 
 RUN sed -i '/\[Components\]/a \  Silicon/Intel/IntelSiliconPkg/Feature/VTd/IntelVTdDxe/IntelVTdDxe.inf' \
@@ -64,13 +64,13 @@ ENV common_build_opt="BLD_*_NETWORK_HTTP_ENABLE=1 BLD_*_NETWORK_TLS_ENABLE=1"
 ENV tpm_build_opt="BLD_*_TPM1_ENABLE=1 BLD_*_TPM2_ENABLE=1"
 
 # Build AARCH64.
-ENV GCC5_AARCH64_PREFIX="/usr/bin/aarch64-linux-gnu-"
+ENV GCC_AARCH64_PREFIX="/usr/bin/aarch64-linux-gnu-"
 ENV build_target=RELEASE
 ENV stuart_opts="-c ArmVirtPkg/PlatformCI/QemuBuild.py -a AARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build RiscV.
-ENV GCC5_RISCV64_PREFIX="/opt/riscv/bin/riscv64-unknown-elf-"
+ENV GCC_RISCV64_PREFIX="/opt/riscv/bin/riscv64-unknown-elf-"
 ENV build_target=RELEASE
 ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a RISCV64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
@@ -81,7 +81,7 @@ ENV stuart_opts="-c OvmfPkg/PlatformCI/PlatformBuild.py -a X64 Target=${build_ta
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
 
 # Build LoongArch64.
-ENV GCC5_LOONGARCH64_PREFIX="/opt/loongarch64_cross-toolchain/cross-tools/bin/loongarch64-unknown-linux-gnu-"
+ENV GCC_LOONGARCH64_PREFIX="/opt/loongarch64_cross-toolchain/cross-tools/bin/loongarch64-unknown-linux-gnu-"
 ENV build_target=RELEASE
 ENV stuart_opts="-c OvmfPkg/PlatformCI/QemuBuild.py -a LOONGARCH64 Target=${build_target} TOOL_CHAIN_TAG=${toolchain} ${common_build_opt}"
 RUN . venv/bin/activate && stuart_setup ${stuart_opts} && stuart_update ${stuart_opts} && stuart_build ${stuart_opts}
