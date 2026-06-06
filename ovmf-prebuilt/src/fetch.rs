@@ -1,4 +1,5 @@
 use crate::{Error, Source};
+use base16ct::HexDisplay;
 use log::info;
 use sha2::{Digest, Sha256};
 use std::io::{self, Cursor, Read};
@@ -38,7 +39,7 @@ pub(crate) fn update_cache(source: Source, prebuilt_dir: &Path) -> Result<(), Er
     let data = retry(MAX_DOWNLOAD_RETRIES, || download_url(&url))?;
 
     // Validate the hash.
-    let actual_hash = format!("{:x}", Sha256::digest(&data));
+    let actual_hash = format!("{:x}", HexDisplay(&Sha256::digest(&data)));
     if actual_hash != source.sha256 {
         return Err(Error::HashMismatch {
             actual: actual_hash,
