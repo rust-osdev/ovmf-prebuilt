@@ -10,9 +10,13 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-dev \
     python3-venv \
+    rustup \
     uuid-dev \
     wget \
     xz-utils
+
+RUN rustup install 1.96
+RUN cargo install --locked cargo-make@0.37.24
 
 # Use the 2023.09.13 nightly GCC 5 toolchain for RISCV64.
 RUN wget -q -O gcc-riscv.tar.xz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2025.09.28/riscv64-elf-ubuntu-22.04-gcc-nightly-2025.09.28-nightly.tar.xz
