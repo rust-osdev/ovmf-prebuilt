@@ -57,9 +57,14 @@ impl Source {
         sha256: "d4621f6013b1c6b36e9aa17dafb48458e5499392f9abbb1d11d719725b2ebc35",
     };
 
+    pub const EDK2_STABLE202605_R1: Self = Self {
+        tag: "edk2-stable202605-r1",
+        sha256: "8ae4d2d73161cc2335f5675d3b8b6edfa0642301679764a246940488ea3ce20d",
+    };
+
     /// Latest release tag.
     ///
     /// Note that this is not necessarily the latest prebuilt available
     /// from the git repo.
-    pub const LATEST: Self = Self::EDK2_STABLE202602_R1;
+    pub const LATEST: Self = Self::EDK2_STABLE202605_R1;
 }
