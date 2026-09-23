@@ -11,7 +11,7 @@ jobs:
   build_tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: cargo xtask build-edk2 --container-cmd=docker --create-release $GITHUB_REF_NAME
         env:
           GH_TOKEN: ${{ github.token }}
